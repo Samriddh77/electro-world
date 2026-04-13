@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 
 export default function PrivacyPolicy() {
   return (
-    <div className="max-w-4xl mx-auto px-8 py-16">
-      <h1 className="text-4xl font-black text-primary mb-8 tracking-tighter">PRIVACY POLICY</h1>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-10 sm:py-16">
+      <h1 className="text-3xl sm:text-4xl font-black text-primary mb-6 sm:mb-8 tracking-tighter">PRIVACY POLICY</h1>
       <p className="text-sm text-on-surface-variant font-bold uppercase tracking-widest mb-12">Last Updated: April 2026</p>
       
       <div className="space-y-8 text-on-surface-variant leading-relaxed">

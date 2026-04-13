@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, QuoteRequest, ContactMessage } from '../lib/supabase';
 import * as XLSX from 'xlsx';
-import { Download, Table as TableIcon, Lock, Eye, EyeOff } from 'lucide-react';
+import { Download, Table as TableIcon, Lock, Eye, EyeOff, RefreshCw } from 'lucide-react';
 
 const ADMIN_PASSWORD = 'ElectroWorld@2026';
 
@@ -15,7 +15,6 @@ export default function Admin() {
   const [authError, setAuthError] = useState('');
 
   useEffect(() => {
-    // Check if already authenticated in this session
     const isAuth = sessionStorage.getItem('ew_admin_auth');
     if (isAuth === 'true') {
       setAuthenticated(true);
@@ -45,14 +44,12 @@ export default function Admin() {
         .from('quote_requests')
         .select('*')
         .order('created_at', { ascending: false });
-
       if (quotesError) console.error('Error fetching quotes:', quotesError);
-      
+
       const { data: contactsData, error: contactsError } = await supabase
         .from('contact_messages')
         .select('*')
         .order('created_at', { ascending: false });
-
       if (contactsError) console.error('Error fetching contacts:', contactsError);
 
       if (quotesData) setQuotes(quotesData);
@@ -65,37 +62,30 @@ export default function Admin() {
 
   const exportToExcel = () => {
     const workbook = XLSX.utils.book_new();
-
     if (quotes.length > 0) {
-      const quotesSheet = XLSX.utils.json_to_sheet(quotes);
-      XLSX.utils.book_append_sheet(workbook, quotesSheet, "Quote Requests");
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(quotes), "Quote Requests");
     } else {
-      const emptySheet = XLSX.utils.json_to_sheet([{ Notice: "No Quote Requests yet" }]);
-      XLSX.utils.book_append_sheet(workbook, emptySheet, "Quote Requests");
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([{ Notice: "No Quote Requests yet" }]), "Quote Requests");
     }
-
     if (contacts.length > 0) {
-      const contactsSheet = XLSX.utils.json_to_sheet(contacts);
-      XLSX.utils.book_append_sheet(workbook, contactsSheet, "General Enquiries");
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(contacts), "General Enquiries");
     } else {
-      const emptySheet = XLSX.utils.json_to_sheet([{ Notice: "No General Enquiries yet" }]);
-      XLSX.utils.book_append_sheet(workbook, emptySheet, "General Enquiries");
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([{ Notice: "No General Enquiries yet" }]), "General Enquiries");
     }
-
     XLSX.writeFile(workbook, `ElectroWorld_Enquiries_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
-  // If not authenticated, show the login gate
+  // Login Gate
   if (!authenticated) {
     return (
-      <div className="max-w-md mx-auto px-8 py-32">
-        <div className="bg-surface-container-lowest p-10 border border-outline-variant/30 shadow-lg">
-          <div className="flex items-center gap-3 mb-8">
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md bg-surface-container-lowest p-8 sm:p-10 border border-outline-variant/30 shadow-lg">
+          <div className="flex items-center gap-3 mb-6 sm:mb-8">
             <Lock className="w-6 h-6 text-primary" />
             <h1 className="text-2xl font-black tracking-tighter">Admin Access</h1>
           </div>
-          <p className="text-sm text-on-surface-variant mb-8">This area is restricted. Enter the admin password to view enquiry data.</p>
-          <form onSubmit={handleLogin} className="space-y-6">
+          <p className="text-sm text-on-surface-variant mb-6 sm:mb-8">This area is restricted. Enter the admin password to view enquiry data.</p>
+          <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6">
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -129,23 +119,31 @@ export default function Admin() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-8 py-16">
-      <div className="flex justify-between items-end mb-12 border-b border-outline-variant/30 pb-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-10 sm:py-16">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8 sm:mb-12 border-b border-outline-variant/30 pb-5 sm:pb-6">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2 block">Secure Area</span>
-          <h1 className="text-4xl font-black tracking-tighter">Database Dashboard</h1>
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tighter">Database Dashboard</h1>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-2 sm:gap-4">
+          <button
+            onClick={fetchData}
+            className="border border-outline-variant text-on-surface-variant flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 font-bold text-xs sm:text-sm uppercase tracking-widest hover:bg-surface-container transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
           <button 
             onClick={exportToExcel}
-            className="bg-[#1D6F42] hover:bg-[#155331] text-white flex items-center justify-center gap-2 px-8 py-3 font-bold text-sm uppercase tracking-widest transition-colors shadow-sm"
+            className="bg-[#1D6F42] hover:bg-[#155331] text-white flex items-center gap-2 px-4 sm:px-8 py-2 sm:py-3 font-bold text-xs sm:text-sm uppercase tracking-widest transition-colors shadow-sm"
           >
-            <TableIcon className="w-5 h-5" />
-            Export to Excel
+            <TableIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+            Export Excel
           </button>
           <button
             onClick={() => { sessionStorage.removeItem('ew_admin_auth'); setAuthenticated(false); }}
-            className="border border-outline-variant text-on-surface-variant px-6 py-3 font-bold text-sm uppercase tracking-widest hover:bg-surface-container transition-colors"
+            className="border border-outline-variant text-on-surface-variant px-4 sm:px-6 py-2 sm:py-3 font-bold text-xs sm:text-sm uppercase tracking-widest hover:bg-surface-container transition-colors"
           >
             Logout
           </button>
@@ -155,11 +153,31 @@ export default function Admin() {
       {loading ? (
         <div className="text-center py-20 text-on-surface-variant animate-pulse">Connecting to Database...</div>
       ) : (
-        <div className="space-y-16">
+        <div className="space-y-12 sm:space-y-16">
           {/* Quotes Section */}
           <section>
-            <h2 className="text-2xl font-black mb-6">Recent Quote Enquiries ({quotes.length})</h2>
-            <div className="bg-surface-container-lowest border border-outline-variant/30 overflow-x-auto rounded-sm">
+            <h2 className="text-xl sm:text-2xl font-black mb-4 sm:mb-6">Recent Quote Enquiries ({quotes.length})</h2>
+            {/* Mobile cards view */}
+            <div className="sm:hidden space-y-4">
+              {quotes.length === 0 ? (
+                <p className="text-center text-on-surface-variant italic py-8 text-sm">No data found. Wait for a submission.</p>
+              ) : quotes.map(q => (
+                <div key={q.id} className="bg-surface-container-lowest border border-outline-variant/30 p-4 rounded-sm space-y-2">
+                  <div className="flex justify-between items-start">
+                    <span className="font-black text-on-surface">{q.full_name}</span>
+                    <span className="text-xs text-on-surface-variant">{new Date(q.created_at || '').toLocaleDateString()}</span>
+                  </div>
+                  {q.company_name && <p className="text-sm text-on-surface-variant">{q.company_name}</p>}
+                  <p className="text-sm font-medium">{q.mobile_number}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {q.product_category && <span className="text-[10px] bg-surface-container px-2 py-1 font-bold uppercase tracking-wider">{q.product_category}</span>}
+                    {q.quantity_required && <span className="text-[10px] bg-secondary-fixed px-2 py-1 font-bold uppercase tracking-wider">{q.quantity_required}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop table view */}
+            <div className="hidden sm:block bg-surface-container-lowest border border-outline-variant/30 overflow-x-auto rounded-sm">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-surface-container text-xs uppercase tracking-widest text-on-surface-variant">
                   <tr>
@@ -192,8 +210,25 @@ export default function Admin() {
 
           {/* Contacts Section */}
           <section>
-            <h2 className="text-2xl font-black mb-6">General Messages ({contacts.length})</h2>
-            <div className="bg-surface-container-lowest border border-outline-variant/30 overflow-x-auto rounded-sm">
+            <h2 className="text-xl sm:text-2xl font-black mb-4 sm:mb-6">General Messages ({contacts.length})</h2>
+            {/* Mobile cards view */}
+            <div className="sm:hidden space-y-4">
+              {contacts.length === 0 ? (
+                <p className="text-center text-on-surface-variant italic py-8 text-sm">No data found.</p>
+              ) : contacts.map(c => (
+                <div key={c.id} className="bg-surface-container-lowest border border-outline-variant/30 p-4 rounded-sm space-y-2">
+                  <div className="flex justify-between items-start">
+                    <span className="font-black text-on-surface">{c.full_name}</span>
+                    <span className="text-xs text-on-surface-variant">{new Date(c.created_at || '').toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-sm text-primary">{c.business_email}</p>
+                  <span className="text-[10px] bg-surface-container px-2 py-1 font-bold uppercase tracking-wider inline-block">{c.requirement_type}</span>
+                  <p className="text-sm text-on-surface-variant line-clamp-2">{c.message}</p>
+                </div>
+              ))}
+            </div>
+            {/* Desktop table view */}
+            <div className="hidden sm:block bg-surface-container-lowest border border-outline-variant/30 overflow-x-auto rounded-sm">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-surface-container text-xs uppercase tracking-widest text-on-surface-variant">
                   <tr>

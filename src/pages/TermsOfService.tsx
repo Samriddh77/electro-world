@@ -2,8 +2,8 @@ import React from 'react';
 
 export default function TermsOfService() {
   return (
-    <div className="max-w-4xl mx-auto px-8 py-16">
-      <h1 className="text-4xl font-black text-primary mb-8 tracking-tighter">TERMS OF SERVICE & CONDITIONS OF SALE</h1>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-6 sm:mb-8 tracking-tighter">TERMS OF SERVICE & CONDITIONS OF SALE</h1>
       <p className="text-sm text-on-surface-variant font-bold uppercase tracking-widest mb-12">Last Updated: April 2026</p>
       
       <div className="space-y-8 text-on-surface-variant leading-relaxed">
